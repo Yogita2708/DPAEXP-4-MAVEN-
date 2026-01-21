@@ -2,42 +2,26 @@ pipeline {
     agent any
 
     tools {
-        // Ensure 'Maven 3' is configured in Jenkins Global Tool Configuration
-        maven 'Maven 3' 
+        maven 'Maven-3.9.11'
     }
 
     stages {
-        stage('Checkout') {
+        stage('Build main branch') {
             steps {
-                checkout scm
+                git branch: 'main', url: 'https://github.com/Yogita2708/DPAEXP-4-MAVEN-.git'
+                bat 'mvn clean package'
+                bat 'ren target\\*.jar main-build.jar'
+                archiveArtifacts artifacts: 'target/main-build.jar', fingerprint: true
             }
         }
 
-        stage('Build') {
+        stage('Build master branch') {
             steps {
-                sh 'mvn clean compile'
+                git branch: 'master', url: 'https://github.com/Yogita2708/DPAEXP-4-MAVEN-.git'
+                bat 'mvn clean package'
+                bat 'ren target\\*.jar master-build.jar'
+                archiveArtifacts artifacts: 'target/master-build.jar', fingerprint: true
             }
-        }
-
-        stage('Test') {
-            steps {
-                sh 'mvn test'
-            }
-        }
-
-        stage('Package') {
-            steps {
-                sh 'mvn package -DskipTests'
-            }
-        }
-    }
-
-    post {
-        always {
-            // Archive JUnit test results
-            junit '**/target/surefire-reports/*.xml'
-            // Archive the JAR/WAR file
-            archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
         }
     }
 }
